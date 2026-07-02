@@ -1,12 +1,13 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
 import { useApp } from "@/components/AppProviders";
 import { translations } from "@/lib/translations";
 
 export default function TopBar() {
   const { lang, theme, toggleTheme, toggleLang } = useApp();
   const t = translations[lang];
+  const { isSignedIn, isLoaded } = useUser();
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -33,7 +34,14 @@ export default function TopBar() {
           >
             {theme === "light" ? t.themeLightLabel : t.themeDarkLabel}
           </button>
-          <UserButton />
+          {isLoaded && isSignedIn && <UserButton />}
+          {isLoaded && !isSignedIn && (
+            <SignInButton mode="redirect">
+              <button className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                Sign in
+              </button>
+            </SignInButton>
+          )}
         </div>
       </div>
     </header>
