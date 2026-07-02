@@ -1,9 +1,12 @@
 "use client";
 
+import type { ProjectData } from "@/types/form";
+import type { TranslationShape } from "@/types/translations";
+
 const inputCls =
   "w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
 
-function Field({ label, hint, required, children }) {
+function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -16,7 +19,15 @@ function Field({ label, hint, required, children }) {
   );
 }
 
-export default function ProjectEntry({ index, project, t, onChange, onRemove }) {
+interface ProjectEntryProps {
+  index: number;
+  project: ProjectData;
+  t: TranslationShape;
+  onChange: (field: keyof ProjectData, value: string | boolean) => void;
+  onRemove: (() => void) | null;
+}
+
+export default function ProjectEntry({ index, project, t, onChange, onRemove }: ProjectEntryProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 bg-white dark:bg-gray-800 flex flex-col gap-4">
       <div className="flex items-center justify-between">

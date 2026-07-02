@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { TranslationShape } from "@/types/translations";
 
-export default function PromptOutput({ prompt, t }) {
+interface PromptOutputProps {
+  prompt: string;
+  t: TranslationShape;
+}
+
+export default function PromptOutput({ prompt, t }: PromptOutputProps) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {

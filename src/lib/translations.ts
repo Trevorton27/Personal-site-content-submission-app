@@ -1,4 +1,6 @@
-export const translations = {
+import type { TranslationShape } from "@/types/translations";
+
+export const translations: Record<string, TranslationShape> = {
   en: {
     // TopBar
     siteTitle: "Personal Website Builder",
@@ -28,6 +30,15 @@ export const translations = {
     s1NamePlaceholder: "e.g., Alex Rivera",
     s1RoleLabel: "Professional title or role",
     s1RolePlaceholder: "e.g., Web Developer, CS Student, Aspiring Software Engineer",
+    s1EmailLabel: "Email address",
+    s1EmailPlaceholder: "you@example.com",
+    s1EmailHint: "Optional — get a copy of your generated prompt delivered to your inbox.",
+    s1AvatarLabel: "Profile photo",
+    avatarUploading: "Uploading...",
+    avatarChange: "Change photo",
+    avatarUpload: "Upload photo",
+    avatarRemove: "Remove",
+    avatarHint: "JPEG, PNG, or WebP · max 4 MB",
 
     // Section 2
     s2Title: "Hero — First Impression",
@@ -94,6 +105,15 @@ export const translations = {
     // Generate
     generateNote: "All done? Click below to generate your AI prompt.",
     generateBtn: "Generate My Prompt",
+    generatePreviewBtn: "Preview My Website",
+    previewGenerating: "Claude is building your website...",
+    previewError: "Preview failed. Please try again.",
+    previewTryAgain: "Try again",
+    downloadHtmlBtn: "Download HTML",
+    openNewTabBtn: "Open in new tab",
+    previewDeviceMobile: "Mobile",
+    previewDeviceTablet: "Tablet",
+    previewDeviceDesktop: "Desktop",
 
     // Vibes / options
     vibes: [
@@ -191,6 +211,15 @@ export const translations = {
     s1NamePlaceholder: "例：山田 太郎",
     s1RoleLabel: "職業・役割",
     s1RolePlaceholder: "例：Webデベロッパー、CS学生、ソフトウェアエンジニア志望",
+    s1EmailLabel: "メールアドレス",
+    s1EmailPlaceholder: "you@example.com",
+    s1EmailHint: "任意 — 生成されたプロンプトのコピーを受け取ることができます。",
+    s1AvatarLabel: "プロフィール写真",
+    avatarUploading: "アップロード中...",
+    avatarChange: "写真を変更",
+    avatarUpload: "写真をアップロード",
+    avatarRemove: "削除",
+    avatarHint: "JPEG、PNG、またはWebP · 最大4MB",
 
     // Section 2
     s2Title: "ヒーロー — 第一印象",
@@ -257,6 +286,15 @@ export const translations = {
     // Generate
     generateNote: "すべて入力できましたか？下のボタンをクリックしてプロンプトを生成してください。",
     generateBtn: "プロンプトを生成する",
+    generatePreviewBtn: "ウェブサイトをプレビュー",
+    previewGenerating: "Claudeがサイトを作成しています...",
+    previewError: "プレビューに失敗しました。もう一度お試しください。",
+    previewTryAgain: "もう一度試す",
+    downloadHtmlBtn: "HTMLをダウンロード",
+    openNewTabBtn: "新しいタブで開く",
+    previewDeviceMobile: "モバイル",
+    previewDeviceTablet: "タブレット",
+    previewDeviceDesktop: "デスクトップ",
 
     // Vibes / options
     vibes: [

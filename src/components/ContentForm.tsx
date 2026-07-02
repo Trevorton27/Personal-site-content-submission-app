@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import ProjectEntry from "@/components/ProjectEntry";
 import BlogPostEntry from "@/components/BlogPostEntry";
 import PromptOutput from "@/components/PromptOutput";
+import AvatarUpload from "@/components/AvatarUpload";
+import WebsitePreview from "@/components/WebsitePreview";
 import { buildPrompt } from "@/lib/buildPrompt";
 import { useApp } from "@/components/AppProviders";
 import { translations } from "@/lib/translations";
+import { sendFormDataEmailAction, sendPromptEmailAction } from "@/actions/sendEmails";
+import { generatePreviewAction } from "@/actions/generatePreview";
+import type { SiteFormData, ProjectData, BlogPostData } from "@/types/form";
 
-// ── Initial state ────────────────────────────────────────────────────────────
+// ── Initial state ─────────────────────────────────────────────────────────────
 
-const emptyProject = () => ({
+const emptyProject = (): ProjectData => ({
   title: "",
   description: "",
   category: "",
@@ -20,17 +26,19 @@ const emptyProject = () => ({
   featured: true,
 });
 
-const emptyPost = () => ({
+const emptyPost = (): BlogPostData => ({
   title: "",
   date: "",
   excerpt: "",
   content: "",
 });
 
-const initialForm = {
+const initialForm: SiteFormData = {
   // Section 1: Identity
   name: "",
   role: "",
+  userEmail: "",
+  avatarUrl: "",
   // Section 2: Hero
   headline: "",
   heroBio: "",
@@ -58,14 +66,26 @@ const initialForm = {
   designNotes: "",
 };
 
-// ── Shared style ─────────────────────────────────────────────────────────────
+// ── Shared style ──────────────────────────────────────────────────────────────
 
 const inputCls =
   "w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
 
 // ── Helper components ─────────────────────────────────────────────────────────
 
-function Section({ number, sectionWord, title, description, children }) {
+function Section({
+  number,
+  sectionWord,
+  title,
+  description,
+  children,
+}: {
+  number: number;
+  sectionWord: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="flex flex-col gap-6 border-t border-gray-200 dark:border-gray-700 pt-10">
       <div>
@@ -82,7 +102,17 @@ function Section({ number, sectionWord, title, description, children }) {
   );
 }
 
-function Field({ label, hint, required, children }) {
+function Field({
+  label,
+  hint,
+  required,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -95,7 +125,17 @@ function Field({ label, hint, required, children }) {
   );
 }
 
-function RadioGroup({ name, options, value, onChange }) {
+function RadioGroup({
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  name: string;
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-2">
       {options.map((opt) => (
@@ -114,23 +154,38 @@ function RadioGroup({ name, options, value, onChange }) {
   );
 }
 
-// ── Main page ────────────────────────────────────────────────────────────────
+// ── Main form component ───────────────────────────────────────────────────────
 
-export default function Page() {
+export default function ContentForm() {
   const { lang } = useApp();
   const t = translations[lang];
+  const { user, isLoaded } = useUser();
 
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<SiteFormData>(initialForm);
   const [prompt, setPrompt] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [validationError, setValidationError] = useState("");
 
-  // ── State helpers ──────────────────────────────────────────────────────────
+  // Pre-populate name + email from Clerk on first load
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || (user.fullName ?? ""),
+      userEmail: prev.userEmail || (user.primaryEmailAddress?.emailAddress ?? ""),
+    }));
+  }, [isLoaded, user]);
 
-  function set(field, value) {
+  // ── State helpers ─────────────────────────────────────────────────────────
+
+  function set(field: keyof SiteFormData, value: any) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function setProject(index, field, value) {
+  function setProject(index: number, field: keyof ProjectData, value: string | boolean) {
     setForm((prev) => {
       const projects = [...prev.projects];
       projects[index] = { ...projects[index], [field]: value };
@@ -142,14 +197,14 @@ export default function Page() {
     setForm((prev) => ({ ...prev, projects: [...prev.projects, emptyProject()] }));
   }
 
-  function removeProject(index) {
+  function removeProject(index: number) {
     setForm((prev) => ({
       ...prev,
       projects: prev.projects.filter((_, i) => i !== index),
     }));
   }
 
-  function setPost(index, field, value) {
+  function setPost(index: number, field: keyof BlogPostData, value: string) {
     setForm((prev) => {
       const blogPosts = [...prev.blogPosts];
       blogPosts[index] = { ...blogPosts[index], [field]: value };
@@ -161,25 +216,67 @@ export default function Page() {
     setForm((prev) => ({ ...prev, blogPosts: [...prev.blogPosts, emptyPost()] }));
   }
 
-  function removePost(index) {
+  function removePost(index: number) {
     setForm((prev) => ({
       ...prev,
       blogPosts: prev.blogPosts.filter((_, i) => i !== index),
     }));
   }
 
-  // ── Generate ───────────────────────────────────────────────────────────────
+  // ── Generate ──────────────────────────────────────────────────────────────
 
-  function handleGenerate() {
+  function validateForm(): string {
+    if (!form.name.trim()) return "Please enter your name (Section 1).";
+    if (!form.heroBio.trim()) return "Please enter your hero bio (Section 2).";
+    if (!form.aboutP1.trim()) return "Please enter your About paragraph (Section 3).";
+    return "";
+  }
+
+  async function handleGenerate() {
+    const error = validateForm();
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+    setValidationError("");
+
     const generated = buildPrompt(form);
     setPrompt(generated);
     setShowPrompt(true);
+
+    // Fire emails in parallel, fire-and-forget — errors don't surface to UI
+    Promise.all([
+      sendFormDataEmailAction(form),
+      sendPromptEmailAction(generated, form.userEmail, form.name),
+    ]).catch(console.error);
+
     setTimeout(() => {
       document.getElementById("prompt-output")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Preview ───────────────────────────────────────────────────────────────
+
+  async function handlePreview() {
+    if (!prompt) return;
+    setPreviewLoading(true);
+    setPreviewError("");
+    setPreviewHtml("");
+
+    const result = await generatePreviewAction(prompt);
+    if ("error" in result && result.error) {
+      setPreviewError(result.error);
+    } else if (result.html) {
+      setPreviewHtml(result.html);
+    }
+    setPreviewLoading(false);
+
+    setTimeout(() => {
+      document.getElementById("website-preview")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-12 flex flex-col gap-12">
@@ -199,7 +296,7 @@ export default function Page() {
         </p>
       </div>
 
-      {/* ── Section 1: Identity ─────────────────────────────────────────────── */}
+      {/* ── Section 1: Identity ───────────────────────────────────────────────── */}
       <Section
         number={1}
         sectionWord={t.sectionWord}
@@ -224,9 +321,25 @@ export default function Page() {
             className={inputCls}
           />
         </Field>
+        <Field label={t.s1EmailLabel} hint={t.s1EmailHint}>
+          <input
+            type="email"
+            placeholder={t.s1EmailPlaceholder}
+            value={form.userEmail}
+            onChange={(e) => set("userEmail", e.target.value)}
+            className={inputCls}
+          />
+        </Field>
+        <Field label={t.s1AvatarLabel}>
+          <AvatarUpload
+            currentUrl={form.avatarUrl}
+            onUpload={(url) => set("avatarUrl", url)}
+            t={t}
+          />
+        </Field>
       </Section>
 
-      {/* ── Section 2: Hero ─────────────────────────────────────────────────── */}
+      {/* ── Section 2: Hero ───────────────────────────────────────────────────── */}
       <Section
         number={2}
         sectionWord={t.sectionWord}
@@ -273,7 +386,7 @@ export default function Page() {
         </div>
       </Section>
 
-      {/* ── Section 3: About ────────────────────────────────────────────────── */}
+      {/* ── Section 3: About ──────────────────────────────────────────────────── */}
       <Section
         number={3}
         sectionWord={t.sectionWord}
@@ -300,7 +413,7 @@ export default function Page() {
         </Field>
       </Section>
 
-      {/* ── Section 4: Projects ─────────────────────────────────────────────── */}
+      {/* ── Section 4: Projects ───────────────────────────────────────────────── */}
       <Section
         number={4}
         sectionWord={t.sectionWord}
@@ -328,7 +441,7 @@ export default function Page() {
         )}
       </Section>
 
-      {/* ── Section 5: Blog Posts ───────────────────────────────────────────── */}
+      {/* ── Section 5: Blog Posts ─────────────────────────────────────────────── */}
       <Section
         number={5}
         sectionWord={t.sectionWord}
@@ -356,7 +469,7 @@ export default function Page() {
         )}
       </Section>
 
-      {/* ── Section 6: Contact ──────────────────────────────────────────────── */}
+      {/* ── Section 6: Contact ────────────────────────────────────────────────── */}
       <Section
         number={6}
         sectionWord={t.sectionWord}
@@ -383,7 +496,7 @@ export default function Page() {
         </Field>
       </Section>
 
-      {/* ── Section 7: Design ───────────────────────────────────────────────── */}
+      {/* ── Section 7: Design ─────────────────────────────────────────────────── */}
       <Section
         number={7}
         sectionWord={t.sectionWord}
@@ -485,22 +598,50 @@ export default function Page() {
         </Field>
       </Section>
 
-      {/* ── Generate button ──────────────────────────────────────────────────── */}
+      {/* ── Generate button ───────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 border-t border-gray-200 dark:border-gray-700 pt-10">
         <p className="text-sm text-gray-500 dark:text-gray-400">{t.generateNote}</p>
-        <button
-          type="button"
-          onClick={handleGenerate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-lg text-lg transition-colors w-full sm:w-auto sm:self-start"
-        >
-          {t.generateBtn}
-        </button>
+        {validationError && (
+          <p className="text-sm text-red-500">{validationError}</p>
+        )}
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleGenerate}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-lg text-lg transition-colors"
+          >
+            {t.generateBtn}
+          </button>
+          {showPrompt && (
+            <button
+              type="button"
+              onClick={handlePreview}
+              disabled={previewLoading}
+              className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-4 px-10 rounded-lg text-lg transition-colors"
+            >
+              {previewLoading ? t.previewGenerating : t.generatePreviewBtn}
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ── Prompt output ────────────────────────────────────────────────────── */}
+      {/* ── Prompt output ─────────────────────────────────────────────────────── */}
       {showPrompt && (
         <div id="prompt-output">
           <PromptOutput prompt={prompt} t={t} />
+        </div>
+      )}
+
+      {/* ── Website preview ───────────────────────────────────────────────────── */}
+      {(previewLoading || previewHtml || previewError) && (
+        <div id="website-preview">
+          <WebsitePreview
+            html={previewHtml}
+            loading={previewLoading}
+            error={previewError}
+            onRetry={handlePreview}
+            t={t}
+          />
         </div>
       )}
     </main>

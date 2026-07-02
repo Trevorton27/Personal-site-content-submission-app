@@ -1,5 +1,6 @@
 "use client";
 
+import { UserButton } from "@clerk/nextjs";
 import { useApp } from "@/components/AppProviders";
 import { translations } from "@/lib/translations";
 
@@ -32,6 +33,7 @@ export default function TopBar() {
           >
             {theme === "light" ? t.themeLightLabel : t.themeDarkLabel}
           </button>
+          <UserButton />
         </div>
       </div>
     </header>

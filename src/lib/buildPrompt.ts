@@ -1,10 +1,15 @@
+import { SYSTEM_PROMPT } from "@/lib/systemPrompt";
+import type { SiteFormData } from "@/types/form";
+
 /**
  * Assembles the AI prompt from form data.
- * Takes the complete form state object and returns a formatted markdown string
- * ready to paste into an AI assistant.
+ * Prepends the system prompt block, then adds the user's content sections.
  */
-export function buildPrompt(form) {
-  const lines = [];
+export function buildPrompt(form: SiteFormData): string {
+  const lines: string[] = [];
+
+  // ── System prompt (prepended) ──────────────────────────────────────────────
+  lines.push(SYSTEM_PROMPT);
 
   lines.push("# My Personal Website — Content & Design");
   lines.push("");
@@ -20,6 +25,7 @@ export function buildPrompt(form) {
   lines.push("");
   if (form.name) lines.push(`- **Name:** ${form.name}`);
   if (form.role) lines.push(`- **Role / Title:** ${form.role}`);
+  if (form.avatarUrl) lines.push(`- **Profile photo:** ${form.avatarUrl}`);
   lines.push("");
 
   // ── Hero ──────────────────────────────────────────────────────────────────
@@ -81,10 +87,13 @@ export function buildPrompt(form) {
       if (post.date) lines.push(`- **Date:** ${post.date}`);
       if (post.excerpt) lines.push(`- **Excerpt:** ${post.excerpt}`);
       if (post.content) {
+        const truncated = post.content.length > 1000
+          ? post.content.slice(0, 1000) + "\n\n[... content truncated for prompt length ...]"
+          : post.content;
         lines.push("");
         lines.push("**Full content:**");
         lines.push("");
-        lines.push(post.content);
+        lines.push(truncated);
       }
       lines.push("");
     });
