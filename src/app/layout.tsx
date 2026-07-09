@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider  afterSignUpUrl="/">
+    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased min-h-screen">
           <AppProviders>
