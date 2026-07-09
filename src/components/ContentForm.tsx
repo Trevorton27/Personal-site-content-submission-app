@@ -48,8 +48,10 @@ const initialForm: SiteFormData = {
   aboutP1: "",
   aboutP2: "",
   // Section 4: Projects
+  includeProjects: true,
   projects: [emptyProject()],
   // Section 5: Blog Posts
+  includeBlog: true,
   blogPosts: [emptyPost()],
   // Section 6: Contact
   contactHeading: "Get in Touch",
@@ -179,6 +181,25 @@ export default function ContentForm() {
     }));
   }, [isLoaded, user]);
 
+  // Swap translation-dependent field defaults when language changes.
+  // Only replaces values that still match a known language default — preserves user edits.
+  useEffect(() => {
+    const enT = translations["en"];
+    const jaT = translations["ja"];
+    const isDefault = (val: string, en: string, ja: string) => val === en || val === ja;
+    setForm((prev) => ({
+      ...prev,
+      primaryBtnLabel: isDefault(prev.primaryBtnLabel, enT.s2PrimaryPlaceholder, jaT.s2PrimaryPlaceholder)
+        ? t.s2PrimaryPlaceholder : prev.primaryBtnLabel,
+      secondaryBtnLabel: isDefault(prev.secondaryBtnLabel, enT.s2SecondaryPlaceholder, jaT.s2SecondaryPlaceholder)
+        ? t.s2SecondaryPlaceholder : prev.secondaryBtnLabel,
+      contactHeading: isDefault(prev.contactHeading, enT.s6HeadingPlaceholder, jaT.s6HeadingPlaceholder)
+        ? t.s6HeadingPlaceholder : prev.contactHeading,
+      contactIntro: isDefault(prev.contactIntro, enT.s6IntroPlaceholder, jaT.s6IntroPlaceholder)
+        ? t.s6IntroPlaceholder : prev.contactIntro,
+    }));
+  }, [lang]);
+
   // ── State helpers ─────────────────────────────────────────────────────────
 
   function set(field: keyof SiteFormData, value: any) {
@@ -240,7 +261,7 @@ export default function ContentForm() {
     }
     setValidationError("");
 
-    const generated = buildPrompt(form);
+    const generated = buildPrompt(form, lang);
     setPrompt(generated);
     setShowPrompt(true);
 
@@ -420,24 +441,40 @@ export default function ContentForm() {
         title={t.s4Title}
         description={t.s4Desc}
       >
-        {form.projects.map((project, i) => (
-          <ProjectEntry
-            key={i}
-            index={i}
-            project={project}
-            t={t}
-            onChange={(field, value) => setProject(i, field, value)}
-            onRemove={form.projects.length > 1 ? () => removeProject(i) : null}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.includeProjects}
+            onChange={(e) => set("includeProjects", e.target.checked)}
+            className="rounded text-blue-600"
           />
-        ))}
-        {form.projects.length < 5 && (
-          <button
-            type="button"
-            onClick={addProject}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium text-left"
-          >
-            {t.addProject}
-          </button>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.s4IncludeLabel}</span>
+        </label>
+        {!form.includeProjects && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">{t.s4SkipNote}</p>
+        )}
+        {form.includeProjects && (
+          <>
+            {form.projects.map((project, i) => (
+              <ProjectEntry
+                key={i}
+                index={i}
+                project={project}
+                t={t}
+                onChange={(field, value) => setProject(i, field, value)}
+                onRemove={form.projects.length > 1 ? () => removeProject(i) : null}
+              />
+            ))}
+            {form.projects.length < 5 && (
+              <button
+                type="button"
+                onClick={addProject}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium text-left"
+              >
+                {t.addProject}
+              </button>
+            )}
+          </>
         )}
       </Section>
 
@@ -448,24 +485,40 @@ export default function ContentForm() {
         title={t.s5Title}
         description={t.s5Desc}
       >
-        {form.blogPosts.map((post, i) => (
-          <BlogPostEntry
-            key={i}
-            index={i}
-            post={post}
-            t={t}
-            onChange={(field, value) => setPost(i, field, value)}
-            onRemove={form.blogPosts.length > 1 ? () => removePost(i) : null}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.includeBlog}
+            onChange={(e) => set("includeBlog", e.target.checked)}
+            className="rounded text-blue-600"
           />
-        ))}
-        {form.blogPosts.length < 3 && (
-          <button
-            type="button"
-            onClick={addPost}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium text-left"
-          >
-            {t.addPost}
-          </button>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.s5IncludeLabel}</span>
+        </label>
+        {!form.includeBlog && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">{t.s5SkipNote}</p>
+        )}
+        {form.includeBlog && (
+          <>
+            {form.blogPosts.map((post, i) => (
+              <BlogPostEntry
+                key={i}
+                index={i}
+                post={post}
+                t={t}
+                onChange={(field, value) => setPost(i, field, value)}
+                onRemove={form.blogPosts.length > 1 ? () => removePost(i) : null}
+              />
+            ))}
+            {form.blogPosts.length < 3 && (
+              <button
+                type="button"
+                onClick={addPost}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium text-left"
+              >
+                {t.addPost}
+              </button>
+            )}
+          </>
         )}
       </Section>
 

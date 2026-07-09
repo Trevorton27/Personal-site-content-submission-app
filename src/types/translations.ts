@@ -63,11 +63,15 @@ export interface TranslationShape {
   // Section 4
   s4Title: string;
   s4Desc: string;
+  s4IncludeLabel: string;
+  s4SkipNote: string;
   addProject: string;
 
   // Section 5
   s5Title: string;
   s5Desc: string;
+  s5IncludeLabel: string;
+  s5SkipNote: string;
   addPost: string;
 
   // Section 6

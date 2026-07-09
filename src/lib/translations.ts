@@ -67,11 +67,15 @@ export const translations: Record<string, TranslationShape> = {
     // Section 4
     s4Title: "Projects",
     s4Desc: "Add 1–5 projects. Featured ones appear on the homepage; all appear on the Portfolio page.",
+    s4IncludeLabel: "Include Projects / Portfolio section",
+    s4SkipNote: "The Portfolio page and all project cards will be removed from your site.",
     addProject: "+ Add another project",
 
     // Section 5
     s5Title: "Blog Posts",
     s5Desc: "Add 1–3 posts. The 3 most recent appear on your homepage.",
+    s5IncludeLabel: "Include Blog section",
+    s5SkipNote: "The Blog page and all post previews will be removed from your site.",
     addPost: "+ Add another post",
 
     // Section 6
@@ -248,11 +252,15 @@ export const translations: Record<string, TranslationShape> = {
     // Section 4
     s4Title: "プロジェクト",
     s4Desc: "1〜5つのプロジェクトを追加。注目プロジェクトはホームページに、すべてはポートフォリオページに表示されます。",
+    s4IncludeLabel: "プロジェクト／ポートフォリオセクションを含める",
+    s4SkipNote: "ポートフォリオページとすべてのプロジェクトカードがサイトから削除されます。",
     addProject: "+ プロジェクトを追加",
 
     // Section 5
     s5Title: "ブログ記事",
     s5Desc: "1〜3記事を追加。最新の3記事がホームページに表示されます。",
+    s5IncludeLabel: "ブログセクションを含める",
+    s5SkipNote: "ブログページとすべての記事プレビューがサイトから削除されます。",
     addPost: "+ 記事を追加",
 
     // Section 6

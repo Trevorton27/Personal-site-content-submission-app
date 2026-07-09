@@ -30,8 +30,10 @@ export interface SiteFormData {
   aboutP1: string;
   aboutP2: string;
   // Section 4: Projects
+  includeProjects: boolean;
   projects: ProjectData[];
   // Section 5: Blog Posts
+  includeBlog: boolean;
   blogPosts: BlogPostData[];
   // Section 6: Contact
   contactHeading: string;

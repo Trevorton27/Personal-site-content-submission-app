@@ -1,15 +1,16 @@
 /**
- * fill-form.js
+ * fill-form-en.js
  *
  * Paste this entire file into the browser DevTools console while the app is
- * running (npm run dev) and the form page is open. It will populate every
- * field with realistic sample data so you can immediately click
- * "Generate My Prompt" to test prompt generation.
+ * running (npm run dev), the form page is open, and the UI language is set
+ * to English. It will populate every field with realistic sample data so you
+ * can immediately click "Generate My Prompt" to test prompt generation.
  *
  * Usage:
  *   1. Open http://localhost:3000 and sign in
- *   2. Open DevTools → Console
- *   3. Paste this script and press Enter
+ *   2. Make sure the UI is in English (toggle if needed)
+ *   3. Open DevTools → Console
+ *   4. Paste this script and press Enter
  */
 
 (function fillForm() {
@@ -39,7 +40,7 @@
     const all = document.querySelectorAll("input, textarea, select");
     const el = [...all].find((e) => e.placeholder === placeholder);
     if (!el) {
-      console.warn(`fill-form: element not found for placeholder "${placeholder}"`);
+      console.warn(`fill-form-en: element not found for placeholder "${placeholder}"`);
       return;
     }
     fill(el, value);
@@ -47,8 +48,6 @@
 
   /**
    * Click a radio button whose adjacent label text starts with the given prefix.
-   * Matches the first radio[name=groupName] whose sibling <span> text starts
-   * with `textPrefix`.
    */
   function clickRadio(groupName, textPrefix) {
     const labels = [...document.querySelectorAll(`input[type="radio"][name="${groupName}"]`)].map(
@@ -58,7 +57,7 @@
       (lbl) => lbl && lbl.textContent.trim().startsWith(textPrefix)
     );
     if (!target) {
-      console.warn(`fill-form: radio not found — name="${groupName}", text starts with "${textPrefix}"`);
+      console.warn(`fill-form-en: radio not found — name="${groupName}", text starts with "${textPrefix}"`);
       return;
     }
     target.querySelector("input").click();
@@ -70,7 +69,7 @@
       (b) => b.textContent.trim() === text
     );
     if (!btn) {
-      console.warn(`fill-form: button not found — "${text}"`);
+      console.warn(`fill-form-en: button not found — "${text}"`);
       return;
     }
     btn.click();
@@ -194,5 +193,5 @@ I'm going to keep building small projects until the fundamentals feel automatic.
     "I want it to feel personal and approachable, not corporate. Plenty of whitespace. No heavy animations — subtle hover effects are fine."
   );
 
-  console.log("fill-form: all fields populated. Click \"Generate My Prompt\" to test.");
+  console.log("fill-form-en: all fields populated. Click \"Generate My Prompt\" to test.");
 })();
