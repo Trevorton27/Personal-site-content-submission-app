@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
 import { useApp } from "@/components/AppProviders";
 import { translations } from "@/lib/translations";
@@ -7,7 +9,14 @@ import { translations } from "@/lib/translations";
 export default function TopBar() {
   const { lang, theme, toggleTheme, toggleLang } = useApp();
   const t = translations[lang];
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
+  const pathname = usePathname();
+  const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+  const ADMIN_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const isAdmin = isSignedIn && ADMIN_IDS.includes(user?.id ?? "");
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -34,8 +43,24 @@ export default function TopBar() {
           >
             {theme === "light" ? t.themeLightLabel : t.themeDarkLabel}
           </button>
+          {isLoaded && isSignedIn && (
+            <Link
+              href="/history"
+              className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {t.historyNavLabel}
+            </Link>
+          )}
+          {isLoaded && isAdmin && (
+            <Link
+              href="/admin"
+              className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Admin
+            </Link>
+          )}
           {isLoaded && isSignedIn && <UserButton />}
-          {isLoaded && !isSignedIn && (
+          {isLoaded && !isSignedIn && !isAuthPage && (
             <SignInButton mode="redirect">
               <button className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 Sign in
