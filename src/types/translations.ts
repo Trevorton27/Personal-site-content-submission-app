@@ -159,4 +159,24 @@ export interface TranslationShape {
   copyBtn: string;
   copiedBtn: string;
   downloadBtn: string;
+  downloadTxtBtn: string;
+  historyViewInHistory: string;
+  promptSaveError: string;
+
+  // History
+  historyNavLabel: string;
+  historyPageTitle: string;
+  historyEmptyTitle: string;
+  historyEmptyBody: string;
+  historyVersionCount: (n: number) => string;
+  historyLatestBadge: string;
+  historyBackToList: string;
+  historyVersionLabel: string;
+  historyCreatedLabel: string;
+  historyEditBtn: string;
+  historyEditPageTitle: string;
+  historyEditHint: (v: number) => string;
+  historyEditSubmitBtn: string;
+  historyEditCancelBtn: string;
+  historyCharCount: (n: number, max: number) => string;
 }

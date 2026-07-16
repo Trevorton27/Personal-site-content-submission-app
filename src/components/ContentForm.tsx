@@ -12,6 +12,7 @@ import { useApp } from "@/components/AppProviders";
 import { translations } from "@/lib/translations";
 import { sendFormDataEmailAction, sendPromptEmailAction } from "@/actions/sendEmails";
 import { generatePreviewAction } from "@/actions/generatePreview";
+import { savePromptAction } from "@/actions/promptHistory";
 import type { SiteFormData, ProjectData, BlogPostData } from "@/types/form";
 
 // ── Initial state ─────────────────────────────────────────────────────────────
@@ -48,10 +49,10 @@ const initialForm: SiteFormData = {
   aboutP1: "",
   aboutP2: "",
   // Section 4: Projects
-  includeProjects: true,
+  includeProjects: false,
   projects: [emptyProject()],
   // Section 5: Blog Posts
-  includeBlog: true,
+  includeBlog: false,
   blogPosts: [emptyPost()],
   // Section 6: Contact
   contactHeading: "Get in Touch",
@@ -166,6 +167,7 @@ export default function ContentForm() {
   const [form, setForm] = useState<SiteFormData>(initialForm);
   const [prompt, setPrompt] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+  const [savedPromptId, setSavedPromptId] = useState<string | undefined>();
   const [previewHtml, setPreviewHtml] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
@@ -264,12 +266,18 @@ export default function ContentForm() {
     const generated = buildPrompt(form, lang);
     setPrompt(generated);
     setShowPrompt(true);
+    setSavedPromptId(undefined);
 
     // Fire emails in parallel, fire-and-forget — errors don't surface to UI
     Promise.all([
       sendFormDataEmailAction(form),
       sendPromptEmailAction(generated, form.userEmail, form.name),
     ]).catch(console.error);
+
+    // Save to history, fire-and-forget
+    savePromptAction(generated, form).then((r) => {
+      if (r.id) setSavedPromptId(r.id);
+    }).catch(console.error);
 
     setTimeout(() => {
       document.getElementById("prompt-output")?.scrollIntoView({ behavior: "smooth" });
@@ -681,7 +689,7 @@ export default function ContentForm() {
       {/* ── Prompt output ─────────────────────────────────────────────────────── */}
       {showPrompt && (
         <div id="prompt-output">
-          <PromptOutput prompt={prompt} t={t} />
+          <PromptOutput prompt={prompt} t={t} savedPromptId={savedPromptId} />
         </div>
       )}
 

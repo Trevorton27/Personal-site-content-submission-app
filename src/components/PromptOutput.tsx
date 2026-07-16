@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { downloadPromptAs } from "@/lib/downloadPrompt";
 import type { TranslationShape } from "@/types/translations";
 
 interface PromptOutputProps {
   prompt: string;
   t: TranslationShape;
+  savedPromptId?: string;
 }
 
-export default function PromptOutput({ prompt, t }: PromptOutputProps) {
+export default function PromptOutput({ prompt, t, savedPromptId }: PromptOutputProps) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -16,16 +19,6 @@ export default function PromptOutput({ prompt, t }: PromptOutputProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
-  }
-
-  function handleDownload() {
-    const blob = new Blob([prompt], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "my-personal-website-prompt.md";
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
   return (
@@ -45,11 +38,26 @@ export default function PromptOutput({ prompt, t }: PromptOutputProps) {
         </button>
         <button
           type="button"
-          onClick={handleDownload}
+          onClick={() => downloadPromptAs(prompt, "md", "my-personal-website-prompt")}
           className="border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-6 rounded-md text-sm transition-colors"
         >
           {t.downloadBtn}
         </button>
+        <button
+          type="button"
+          onClick={() => downloadPromptAs(prompt, "txt", "my-personal-website-prompt")}
+          className="border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-6 rounded-md text-sm transition-colors"
+        >
+          {t.downloadTxtBtn}
+        </button>
+        {savedPromptId && (
+          <Link
+            href={`/history/${savedPromptId}`}
+            className="border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-6 rounded-md text-sm transition-colors"
+          >
+            {t.historyViewInHistory}
+          </Link>
+        )}
       </div>
 
       <pre className="bg-gray-900 dark:bg-gray-950 text-gray-100 rounded-lg p-6 text-xs leading-relaxed overflow-auto max-h-[600px] whitespace-pre-wrap font-mono">
