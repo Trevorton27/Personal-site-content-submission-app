@@ -10,7 +10,8 @@ export default function FooterBar() {
   return (
     <footer className="border-t border-gray-200 dark:border-gray-700 mt-24">
       <div className="max-w-3xl mx-auto px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
-        {t.footerText}
+        <p>{t.footerText}</p>
+        <p>© Created By Trevor Mearns. All Rights Reserved 2026</p>
       </div>
     </footer>
   );
